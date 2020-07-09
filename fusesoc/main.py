@@ -54,6 +54,15 @@ def _get_core(cm, name):
         exit(1)
     return core
 
+def _parse_flags(args, flags):
+    for flag in args.flag:
+        if flag[0] == "+":
+            flags[flag[1:]] = True
+        elif flag[0] == "-":
+            flags[flag[1:]] = False
+        else:
+            flags[flag] = True
+
 
 def abort_handler(signal, frame):
     print("")
@@ -81,6 +90,7 @@ def build(cm, args):
     else:
         target = args.target
     flags = {"target": target, "tool": args.tool}
+    _parse_flags(args, flags)
     run_backend(
         cm,
         not args.no_export,
@@ -100,6 +110,7 @@ def pgm(cm, args):
     do_build = False
     do_run = True
     flags = {"target": "synth", "tool": None}
+    _parse_flags(args, flags)
     run_backend(
         cm,
         "build",
@@ -182,6 +193,7 @@ def init(cm, args):
 
 def dep_graph(cm, args):
     flags = {"target": args.target, "tool": args.tool}
+    _parse_flags(args, flags)
     core_vlnv = Vlnv(args.core)
 
     flags_str = ", ".join([k + "=" + v for k, v in flags.items() if v])
@@ -398,13 +410,7 @@ def run(cm, args):
         do_run = args.run
 
     flags = {"tool": args.tool, "target": args.target}
-    for flag in args.flag:
-        if flag[0] == "+":
-            flags[flag[1:]] = True
-        elif flag[0] == "-":
-            flags[flag[1:]] = False
-        else:
-            flags[flag] = True
+    _parse_flags(args, flags)
 
     run_backend(
         cm,
@@ -628,6 +634,12 @@ def parse_args():
         action="store_true",
         default=not sys.stdout.isatty(),
     )
+    parser.add_argument(
+        "--flag",
+        help="Set custom use flags. Can be specified multiple times",
+        action="append",
+        default=[],
+    )
     parser.add_argument("--verbose", help="More info messages", action="store_true")
     parser.add_argument("--log-file", help="Write log messages to file")
 
@@ -794,12 +806,6 @@ def parse_args():
     parser_run.add_argument("--run", action="store_true", help="Execute run stage")
     parser_run.add_argument("--target", help="Override default target")
     parser_run.add_argument("--tool", help="Override default tool for target")
-    parser_run.add_argument(
-        "--flag",
-        help="Set custom use flags. Can be specified multiple times",
-        action="append",
-        default=[],
-    )
     parser_run.add_argument(
         "--system-name", help="Override default VLNV name for system"
     )
