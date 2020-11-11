@@ -40,6 +40,7 @@ from pyparsing import (
     ParseException,
 )
 
+import logging as log
 
 def _cond_parse_action(string, location, tokens):
     """A parse action for conditional terms"""
@@ -47,6 +48,8 @@ def _cond_parse_action(string, location, tokens):
     # on whether it was negated or not.
     assert len(tokens) in [2, 3]
 
+
+    log.error("got through here okay {}".format(tokens))
     return (
         (True, tokens[1], tokens[2])
         if len(tokens) == 3
@@ -79,7 +82,7 @@ def _get_parser():
     exprs = Forward()
 
     conditional = (
-        Optional("!")
+        Optional("(!)")
         + word
         + Suppress("?")
         + Suppress("(")
@@ -137,6 +140,8 @@ def _parse(string):
     Raises a ValueError if the string is malformed in some way.
 
     """
+    log.error("parsing {}".format(string))
+
     try:
         raw_ast = _get_parser().parseString(string, parseAll=True)
     except ParseException as err:

@@ -68,6 +68,7 @@ class Section:
     dicts = {}
 
     def __init__(self, tree):
+        #logger.error("Working on something {}".format(tree))
         for k, v in sorted(tree.items()):
             if v is None:
                 continue
@@ -126,6 +127,8 @@ class Core:
         self.core_file = core_file
         self.from_generator = from_generator
 
+        logger.debug("Initialing core file {}".format(core_file))
+
         basename = os.path.basename(self.core_file)
 
         self.core_root = os.path.dirname(self.core_file)
@@ -134,7 +137,9 @@ class Core:
         self.direct_deps = []
 
         try:
+            logger.debug("reading file start")
             _root = Root(utils.yaml_fread(self.core_file))
+            logger.debug("reading file end")
         except KeyError as e:
             raise SyntaxError("Unknown item {}".format(e))
         except (yaml.scanner.ScannerError, yaml.constructor.ConstructorError) as e:
